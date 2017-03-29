@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Console</title>
+    <link rel="stylesheet" type="text/css" href="static/easyui.css">
+    <link rel="stylesheet" type="text/css" href="static/icon.css">
+    <link rel="stylesheet" type="text/css" href="static/color.css">
+    <link rel="stylesheet" type="text/css" href="static/demo.css">
+    <script type="text/javascript" src="static/jquery-1.6.min.js"></script>
+    <script type="text/javascript" src="static/jquery.easyui.min.js"></script>
+
+    <script type="text/javascript" src="node_modules/jssip/dist/jssip.js"></script>
+
+    <style type="text/css">
+    html,body{margin:0;padding:0;}
+    .iw_poi_title {color:#CC5522;font-size:14px;font-weight:bold;overflow:hidden;padding-right:13px;white-space:nowrap}
+    .iw_poi_content {font:12px arial,sans-serif;overflow:visible;padding-top:4px;white-space:-moz-pre-wrap;word-wrap:break-word}
+    .tableContent{
+        width: 100%;
+        text-align: center;
+        margin-top: 50px
+    }
+    .headernav{
+        background: #121828 none repeat scroll 0 0;
+        color: #ffffff;
+        height: 50px;
+        left: 0;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        right: 0;
+        text-align: center;
+        top: 0; 
+        padding: 0 5px
+    }
+    .headernav a{
+        float: right;
+        color: #ffffff;
+        line-height: 50px;
+       text-decoration: none;
+    }
+    .footeru{  
+        text-align: center;
+        width: 100%;
+         background: #121828 none repeat scroll 0 0;
+        line-height: 50px;
+        color: #ffffff
+    }
+        .msgarea{
+            height: 200px;
+            width: 95%;
+
+        }
+        .input{
+            height: 30px;
+            width: 95%;
+        }
+        .btn{
+        }
+
+</style>
+
+</head>
+<body>
+   <div class="headernav">
+        <h3 style="float:left;">JSSIP test</h3>
+   </div>
+    
+    <div class="tableContent">
+
+        <textarea class="msgarea" readonly="readonly" name="Text2" id="msgarea"></textarea>
+
+
+        <div class="cammond">
+
+            <textarea class="input" name="Text1" id="sendtext"></textarea>
+            <br/>
+            <button class="btn" id="sendbtn">send</button>
+
+            <br /> predifined:
+            <select id="defines">
+                <option value ="DEVICE_STATE">DEVICE_STATE</option>
+                <option value ="FRIEND_LIST">FRIEND_LIST</option>
+                <option value="MESSAGE_SEND,text">MESSAGE_SEND,text</option>
+                <option value="MESSAGE_SEND,image">MESSAGE_SEND,image</option>
+                <option value="CHECK_USER">CHECK_USER</option>
+                <option value="ADD_STRANGER">ADD_STRANGER</option>
+                <option value="MOMENT_UPLOAD">MOMENT_UPLOAD</option>
+                <option value="BAT_ADD_FRIEND_SET">BAT_ADD_FRIEND_SET</option>
+                <option value="CONTACT_TASK_STATE">CONTACT_TASK_STATE</option>
+                <option value="SET_PERSON_IMG">SET_PERSON_IMG</option>
+                <option value="SET_PERSON_TEXT">SET_PERSON_TEXT</option>
+                <option value="SET_PERSON_LOC">SET_PERSON_LOC</option>
+
+            </select>
+            <button class="btn" id="plastbtn">plaste</button>
+
+            <br />
+
+            <form method="POST" action="/contact/upload" enctype="multipart/form-data">
+                xls文件 <input type="file" name="myfile" />
+                <input type="submit" id="_submit" value="上传" />
+            </form>
+
+            <br />
+
+            <a href="/imgpool">imagepool</a>
+            <a href="/contact/showdata">showdata</a>
+
+
+        </div>
+
+    </div>
+    <div id="toolbar">
+        <!--<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newUser()">New User</a>-->
+        <!--<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editUser()">Edit User</a>-->
+        <!--<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyUser()">Remove User</a>-->
+    </div>
+
+                <button class="btn" id="plastbtn" onclick="call()">call</button>
+
+
+
+
+    <div class="footeru">(C) 2016-2017 Unicall</div>
+
+<script>
+
+    function showMsg(msg) {
+        var msgobj = $("#msgarea");
+        var origin = $("#msgarea").html();
+        $("#msgarea").html(origin + msg + "\n");
+        var scrollHeight = msgobj[0].scrollHeight;
+        msgobj.scrollTop(scrollHeight);
+
+    }
+    
+    function wsinit() {
+        lokiws = new WebSocket("ws://localhost:9090/ws");
+        lokiws.onopen = function() {
+            lokiws.send("Hello, world");
+        };
+        lokiws.onmessage = function (evt) {
+            showMsg(evt.data)
+        };
+
+        window.lokiws = lokiws
+    }
+
+    window.onload = function() {
+        showMsg("Send command to lokicloud by this console, be careful with command format...")
+        $("#sendbtn").click(function () {
+
+            var data = $("#sendtext").val();
+             console.log(data); 
+
+            window.lokiws.send(data)
+
+        })
+
+        $("#plastbtn").click(function () {
+                    var cmd = {}
+                    var data = $("#defines").val()
+
+                    switch(data){
+                        case "DEVICE_STATE":
+                            cmd = {"type":"DEVICE_STATE"}
+                            break
+                        case "FRIEND_LIST":
+                            cmd = {"type":"FRIEND_LIST", "device":"dev001"}
+                            break
+                        case "MESSAGE_SEND,text":
+                            cmd = {"type":"MESSAGE_SEND","device":"dev001","wxid":"wxid_1163801581012",
+                                "msgtype":"text","content":"发送自console的问候"}
+                            break
+
+                        case "MESSAGE_SEND,image":
+                            cmd = {"type":"MESSAGE_SEND","device":"dev001","wxid":"wxid_1163801581012",
+                                "msgtype":"image","content":"", "imageName":"sldjflkksldfdsljgkdflgl"}
+                            break
+
+                        case "CHECK_USER":
+                            cmd = {"type":"CHECK_USER", "keyword":"18503039343"}
+                            break
+                        case "ADD_STRANGER":
+                            cmd = {"type":"ADD_STRANGER", "strangerV1":"wxid_1163801581012", "way":"NEARBY", "helloStr":"hi~"}
+                            break
+
+                        case "MOMENT_UPLOAD":
+                            cmd = {"type":"MOMENT_UPLOAD", "momtype":"image", "text":"来自console的朋友圈","images":[],"link":""}
+                            break
+
+                        case "BAT_ADD_FRIEND_SET":
+                            cmd = {"type":"BAT_ADD_FRIEND_SET", "interval":30, "onoff":"ON", "way":"PHONE", "helloStr":"你好啊"}
+                            break
+
+                        case "CONTACT_TASK_STATE":
+                            cmd = {"type":"CONTACT_TASK_STATE"}
+                            break
+
+                        case "SET_PERSON_IMG":
+                            cmd = {"type":"SET_PERSON_IMG", "image":"image_name_here"}
+                            break
+
+                        case "SET_PERSON_TEXT":
+                            cmd = {"type":"SET_PERSON_TEXT", "name":"toocooltobetrue","sex":2,"signature":"TOO COOL TO BE TRUE"}
+                            break
+
+                        case "SET_PERSON_LOC":
+                            cmd = {"type":"SET_PERSON_LOC", "latitude":33.04, "longitude":120.33}
+                            break
+
+
+
+
+                    }
+
+                    var msg = JSON.stringify(cmd);
+                    $("#sendtext").html(msg)
+
+        })
+
+        document.getElementById("_submit").onclick = function(event){
+          //取消掉默认的form提交方式
+          if(event.preventDefault) event.preventDefault();
+          else event.returnValue = false;                           //对于IE的取消方式
+
+          var formDOM = document.getElementsByTagName("form")[0];
+          //将form的DOM对象当作FormData的构造函数
+          var formData = new FormData(formDOM);
+          var req = new XMLHttpRequest();
+          req.open("POST", "/contact/upload");
+          //请求完成
+          req.onload = function(){
+             if(this.status === 200){
+                    //对请求成功的处理
+             }
+          }
+          //将form数据发送出去
+          req.send(formData);
+　　　　　 //避免内存泄漏
+　　　　　 req = null;
+        }
+
+
+        wsinit()
+
+        jssipINit()
+
+    }
+
+
+function jssipINit(){
+
+var socket = new JsSIP.WebSocketInterface('ws://172.16.250.1:5066');
+var configuration = {
+  sockets  : [ socket ],
+  uri      : 'sip:3001@172.16.250.1:6998',
+  password : 'fbcc1234'
+};
+
+window.ua = new JsSIP.UA(configuration);
+
+window.ua.start();
+
+}
+
+
+    function call() {
+
+// Register callbacks to desired call events
+var eventHandlers = {
+  'progress': function(e) {
+    console.log('call is in progress');
+  },
+  'failed': function(e) {
+    console.log('call failed with cause: ' + e);
+    console.log(e)
+  },
+  'ended': function(e) {
+    console.log('call ended with cause: '+ e);
+        console.log(e)
+
+  },
+  'confirmed': function(e) {
+    console.log('call confirmed');
+  }
+};
+
+var options = {
+  'eventHandlers'    : eventHandlers,
+  'mediaConstraints' : { 'audio': true, 'video': false }
+};
+        window.mysession = window.ua.call('18503039343', options);
+    }
+
+
+</script>
+</body>
+</html>
